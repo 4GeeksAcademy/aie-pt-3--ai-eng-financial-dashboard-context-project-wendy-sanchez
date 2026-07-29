@@ -1,0 +1,101 @@
+# Reporte de Auditoría: Hallazgos, Buenas Prácticas y Reglas de Arquitectura
+
+---
+
+## Malas Prácticas o Riesgos (Priorizados)
+
+### 🔴 Prioridad: Alta
+
+#### 1. Seguridad / Arquitectura API: Configuración CORS insegura para producción
+* **Ubicación:** `main.py:9`, `main.py:10`, `main.py:11` y `main.py:12`
+* **Detalle:** Se permite origen, métodos y *headers* con comodines (`*`), permitiendo además el envío de credenciales (`allow_credentials=True`).
+* **Riesgo:** La combinación `allow_origins=["*"]` + `allow_credentials=True` abre una superficie de ataque crítica y rompe las prácticas recomendadas para despliegues reales.
+
+#### 2. Arquitectura / Mantenibilidad: Módulo backend monolítico con responsabilidades mezcladas
+* **Ubicación:** `routes.py:22`, `routes.py:94`, `routes.py:150` y `routes.py:248`
+* **Detalle:** Conviven en un mismo archivo los modelos, la generación de datos simulados (*mock*), la lógica de negocio y los controladores HTTP.
+* **Riesgo:** Alta cohesión accidental y acoplamiento severo; dificulta el *testing* unitario aislado, los *refactors* y la evolución del dominio del proyecto.
+
+---
+
+### 🟡 Prioridad: Media-Alta
+
+#### 3. Confiabilidad: Uso de `random.seed` global en el flujo de peticiones (Requests)
+* **Ubicación:** `routes.py:96`
+* **Detalle:** Se muta el estado global del generador de números pseudoaleatorios de Python durante la ejecución de un endpoint.
+* **Riesgo:** Provoca efectos colaterales impredecibles entre pruebas concurrentes o futuras funcionalidades en paralelo.
+
+---
+
+### 🔵 Prioridad: Media
+
+#### 4. Testing: Cobertura incompleta en frontend y falta de pruebas de contrato negativas
+* **Ubicación Frontend:** `financial-utils.test.ts`
+* **Ubicación Backend:** `test_routes.py:12`
+* **Detalle:** En frontend solo existe un test de utilidades; no hay pruebas de componentes, estados de carga/error ni integración con la API. En backend hay pruebas funcionales útiles, pero se omiten escenarios negativos clave (fechas inválidas, rangos invertidos, límites fuera de contrato).
+* **Riesgo:** Regresiones en la experiencia de usuario (UX) y contratos HTTP que pueden romperse sin ser detectados tempranamente.
+
+#### 5. DX / Dependencias: Versiones sin definición estricta (*pinning*) en el backend
+* **Ubicación:** `requirements.txt:1` a `requirements.txt:6`
+* **Detalle:** No se especifican las versiones fijas de las librerías utilizadas.
+* **Riesgo:** Despliegues (*builds*) no reproducibles y fallos intermitentes en el entorno debido a cambios inesperados en dependencias de terceros.
+
+#### 6. UX / Observabilidad Frontend: Manejo de errores poco diagnóstico
+* **Ubicación:** `App.tsx:35` y `App.tsx:36`
+* **Detalle:** Se captura el error de la API pero se descartan los detalles del fallo, mostrando únicamente un mensaje genérico al usuario.
+* **Riesgo:** Resolución de problemas (*troubleshooting*) lenta, ya que el equipo no puede identificar la causa real (Timeout, Error 500, Bloqueo CORS, etc.).
+
+---
+
+### 🟢 Prioridad: Baja-Media
+
+#### 7. Documentación / Operación: Posible desfase entre las guías y la estructura real
+* **Ubicación:** `AGENTS.md:5` y `README.es.md:28`
+* **Detalle:** Las guías exigen la existencia de carpetas específicas para agentes, pero estas no se encuentran presentes en la raíz actual del espacio de trabajo.
+* **Riesgo:** Fricción para el proceso de integración (*onboarding*) de nuevos desarrolladores y para los agentes de IA que dependan de esas rutas.
+
+---
+
+##  Buenas Prácticas Detectadas
+
+El proyecto cuenta con bases sólidas en los siguientes apartados:
+
+* **API Design:** Uso consistente de contratos fuertemente tipados mediante `response_model` en `routes.py` (`:248`, `:268`, `:305`, `:342`).
+* **Validación de entrada:** Buen uso de restricciones (*constraints*) explícitas en los parámetros de consulta (*Query params*) en `routes.py:290` y `routes.py:344`.
+* **Testing backend:** Cobertura funcional de rutas principales automatizada (salud, filtros, segmentación, resúmenes, alertas) en `test_routes.py`.
+* **Frontend - Arquitectura:** Excelente separación de la lógica de cálculo del dominio financiero (`financial-utils.ts`) respecto a los componentes visuales de la interfaz.
+* **UX:** Control visual correcto de los estados de carga (*loading*), caídas del sistema (*fallback*) y uso de *skeletons* para la carga de componentes como gráficos.
+* **Accesibilidad básica:** Se implementaron etiquetas semánticas con atributos `aria-label` en elementos clave de `App.tsx`.
+* **DX (Developer Experience):** Flujo de calidad claro en `package.json:6` con scripts preparados para *linting*, ejecución de *tests* y métricas de *coverage*.
+
+---
+
+## 🛠️ Set de Reglas Propuestas (Mitigación y Preservación)
+
+### 1. Arquitectura Backend
+* **Regla:** Separar el backend por capas mínimas y aisladas: `schemas`, `services`, `repositories`/`data-source` y `routers`.
+* **Regla:** Ningún archivo de rutas (*router*) debe contener lógica de negocio compleja; su función se limita a validación HTTP y orquestación.
+* **Regla:** Aplicar el principio de responsabilidad única: máximo una responsabilidad principal por archivo. Si supera el umbral de complejidad, se debe dividir.
+
+### 2. Seguridad y Configuración
+* **Regla:** Configurar políticas CORS específicas por entorno. En producción se debe usar una lista explícita de orígenes permitidos.
+* **Regla:** Todos los valores sensibles o configurables deben inyectarse mediante variables de entorno debidamente documentadas.
+
+### 3. Confiabilidad y Determinismo
+* **Regla:** Queda prohibido el uso de `random.seed` global dentro del ciclo de vida de una petición HTTP.
+* **Regla:** Para la generación de datos simulados (*mocks*), instanciar un objeto local inyectable tipo `random.Random(seed)`.
+* **Regla:** Todas las funciones encargadas de generar información deben ser puras o estructurarse mediante inyección de dependencias.
+
+### 4. Testing
+* **Regla:** mantener pruebas funcionales de rutas actuales y agregar matriz mínima de casos negativos por endpoint.
+* **Regla:** El frontend debe incluir pruebas de componentes críticos enfocadas en escenarios de carga (*loading*), estado vacío (*empty*), manejo de error y flujo exitoso (*happy path*).
+* **Regla:** Establecer una cobertura mínima sugerida: Utilidades al **90%**, Rutas del Backend al **85%** y Componentes críticos del Frontend al **70%**.
+
+### 5. Documentación y DX
+* **Regla:** Al introducir requisitos operativos (como la carpeta `.agents`), se debe proveer un script de verificación automatizado o una plantilla inicial.
+* **Regla:** Fijar de forma estricta las versiones del backend (*pinning*) mediante el archivo de dependencias o un *lockfile* equivalente.
+* **Regla:** Cada Pull Request (PR) debe incluir una sección obligatoria de "Cómo validar" detallando los comandos de *run* / *test* / *lint*.
+
+### 6. Internacionalización y Consistencia de Producto
+* **Regla:** No escribir valores locales de idioma ni períodos fijos (*hardcoded*) directamente en la interfaz; centralizar configuraciones regionales y zonas horarias.
+* **Regla:** Almacenar todos los textos y cadenas de la interfaz de usuario en un módulo estructurado de mensajes, incluyendo alertas de errores de red (preparado para i18n).
