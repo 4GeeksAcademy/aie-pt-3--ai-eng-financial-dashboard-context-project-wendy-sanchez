@@ -1,0 +1,57 @@
+# Proyecto: Dashboard Financiero
+
+Este proyecto es un dashboard de métricas financieras con arquitectura *full-stack* diseñado para la visualización de KPIs y gráficos automatizados.
+
+## 🚀 Arquitectura del Proyecto
+
+* **Frontend:** Desarrollado en **React + TypeScript (Vite)** para la visualización de KPIs y gráficos.
+* **Backend:** Construido en **FastAPI** para exponer los endpoints de las métricas financieras.
+* **Datos:** Información simulada (*mock*) en el backend para alimentar el dashboard y sus agregaciones.
+* **Despliegue:** Configurado con **Docker Compose** para levantar ambos servicios de forma integrada.
+* **Enfoque:** Práctica guiada para inspección con agentes, reglas y memoria de proyecto.
+
+---
+
+## ⚙️ Funcionalidades del Backend
+
+El backend incluye los siguientes componentes técnicos:
+
+- [x] Endpoint de salud (*healthcheck*).
+- [x] Endpoints de métricas filtrables por fechas, categoría y tipo de operación.
+- [x] Resúmenes por período de tiempo.
+- [x] Listado de *top* categorías.
+- [x] Comparaciones entre periodos financieros.
+- [x] Alertas automatizadas por incrementos de egresos.
+- [x] Segmentación de clientes B2B / B2C.
+
+---
+
+## 🔍 Resultados de la Validación Técnico-Práctica
+
+A continuación se detallan los hallazgos concretos recopilados durante el proceso de validación:
+
+### ❌ Primera Validación (Estado Inicial)
+* **Frontend** (`http://localhost:5173`): No disponible.
+* **Backend** (`http://localhost:8000`): No disponible.
+* **Docs** (`http://localhost:8000/docs`): No disponible.
+* **Diagnóstico:** No había procesos escuchando en los puertos `5173`/`8000` ni contenedores activos.
+
+> **Acción realizada:** Se procedió a levantar los servicios del ecosistema ejecutando el comando:
+> ```bash
+> docker compose up -d --build
+> ```
+
+###  Segunda Validación (Post-Despliegue)
+* **Frontend** (`http://localhost:5173`): **HTTP 200** (Operativo).
+* **Backend Raíz** (`http://localhost:8000`): **HTTP 404** (Esperado).
+* **Docs** (`http://localhost:8000/docs`): **HTTP 200** (Operativo).
+* **Salud Backend** (`http://localhost:8000/health`): **HTTP 200** con respuesta `{"status":"ok"}`.
+* **OpenAPI** (`http://localhost:8000/openapi.json`): **HTTP 200** (Operativo).
+
+---
+
+## 📝 Conclusión Técnica
+
+1. **Estado de Rutas:** El backend funciona correctamente. El código `HTTP 404` en la raíz (`/`) es el comportamiento esperado debido a que dicha ruta no está explícitamente definida en el código de FastAPI.
+2. **Estado del Contenedor:** Tanto el contenedor de *frontend* como el de *backend* se encuentran en estado **Up**, publicando sus puertos de forma correcta.
+3. **Resultado:** Los servicios objetivo quedaron **operativos, estables y validados** para su uso en desarrollo.
