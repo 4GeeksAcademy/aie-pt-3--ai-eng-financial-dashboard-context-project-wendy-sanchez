@@ -1,0 +1,37 @@
+Justificación: Beneficio de la skill typescript-mcp-server-generator para el proyecto
+
+Contexto del proyecto:
+- Este repositorio tiene un backend FastAPI con endpoints de métricas financieras y un frontend React/Vite para visualización.
+- El equipo ya trabaja con agentes, reglas y skills en la carpeta .agents, por lo que agregar capacidades MCP encaja de forma natural en el flujo existente.
+
+¿Qué valor aporta la skill?
+1. Estandariza integraciones de IA con el backend existente
+- La skill permite generar servidores MCP en TypeScript con estructura consistente, validación de entrada y manejo de errores.
+- Esto facilita exponer endpoints como /api/metrics/summary, /api/metrics/alerts y /api/metrics/categories/top como tools reutilizables por asistentes.
+
+2. Reduce fricción para nuevas automatizaciones
+- En lugar de crear conectores ad hoc cada vez, la skill deja un patrón repetible para construir tools MCP rápidamente.
+- El resultado es menos tiempo de implementación y menos riesgo de inconsistencias entre integraciones.
+
+3. Mejora seguridad y calidad de contratos
+- Promueve esquemas con Zod y tipado fuerte, lo que evita llamadas con parámetros inválidos.
+- Obliga a definir entradas/salidas de forma explícita, ayudando a mantener contratos estables entre agentes y API.
+
+4. Acelera casos de uso de análisis financiero asistido
+- Un MCP server puede ofrecer herramientas como:
+  - resumen por periodo
+  - top categorías por tipo de operación
+  - detección de alertas y comparaciones
+- Esto habilita asistentes capaces de responder preguntas de negocio sin tocar directamente código del frontend.
+
+5. Se alinea con la evolución del proyecto
+- El proyecto ya persigue buenas prácticas de ingeniería (reglas, memoria, validaciones).
+- La skill agrega una capa de interoperabilidad con agentes que incrementa la productividad del equipo y la trazabilidad técnica.
+
+Recomendación práctica:
+- Mantener un servidor MCP dedicado (por ejemplo mcp-server/) conectado al backend de métricas.
+- Documentar en README del MCP las tools disponibles, variables de entorno y comandos de build/ejecucion.
+- Agregar nuevas tools conforme crezca la API, reutilizando siempre el mismo patrón generado por la skill.
+
+Conclusión:
+La skill typescript-mcp-server-generator no solo agrega código: aporta una forma consistente y escalable de convertir capacidades del backend financiero en herramientas consumibles por agentes. En este proyecto, eso mejora integración, velocidad de desarrollo y calidad operativa.
