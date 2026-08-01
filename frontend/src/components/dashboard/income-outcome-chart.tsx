@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { type MonthlyDataPoint } from '@/lib/financial-types'
@@ -46,10 +47,29 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   )
 }
 
+function buildChartSummary(data: MonthlyDataPoint[]) {
+  if (data.length === 0) {
+    return 'No monthly income or outcome data is available.'
+  }
+
+  const highestIncomeMonth = data.reduce((highest, current) =>
+    current.income > highest.income ? current : highest,
+  )
+  const highestOutcomeMonth = data.reduce((highest, current) =>
+    current.outcome > highest.outcome ? current : highest,
+  )
+
+  return `Monthly line chart. Highest income was ${formatCurrency(highestIncomeMonth.income)} in ${highestIncomeMonth.month}. Highest outcome was ${formatCurrency(highestOutcomeMonth.outcome)} in ${highestOutcomeMonth.month}.`
+}
+
 export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
+  const titleId = useId()
+  const descriptionId = useId()
+  const summaryId = useId()
+
   if (loading) {
     return (
-      <Card className="border-border/60">
+      <Card className="border-border/60" aria-hidden="true">
         <CardHeader className="pb-4">
           <Skeleton className="h-5 w-52" />
           <Skeleton className="h-3 w-64 mt-1" />
@@ -62,61 +82,76 @@ export function IncomeOutcomeChart({ data, loading }: IncomeOutcomeChartProps) {
   }
 
   const hasData = data.some((d) => d.income > 0 || d.outcome > 0)
+  const summary = buildChartSummary(data)
 
   return (
-    <Card className="border-border/60">
+    <Card
+      className="border-border/60"
+      role="figure"
+      aria-labelledby={titleId}
+      aria-describedby={`${descriptionId} ${summaryId}`}
+    >
       <CardHeader className="pb-4">
-        <CardTitle className="text-base font-semibold">Income vs. Outcome</CardTitle>
-        <CardDescription>Monthly revenue and expenditure evolution</CardDescription>
+        <CardTitle id={titleId} className="text-base font-semibold">Income vs. Outcome</CardTitle>
+        <CardDescription id={descriptionId}>Monthly revenue and expenditure evolution</CardDescription>
       </CardHeader>
       <CardContent>
         {!hasData ? (
-          <div className="flex h-[280px] items-center justify-center text-muted-foreground text-sm">
+          <div role="status" className="flex h-[280px] items-center justify-center text-muted-foreground text-sm">
             No data available to display
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
-              <XAxis
-                dataKey="month"
-                tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)' }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
-                width={48}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                formatter={(value) => (
-                  <span className="text-xs text-muted-foreground capitalize">{value}</span>
-                )}
-              />
-              <Line
-                type="monotone"
-                dataKey="income"
-                name="income"
-                stroke="var(--chart-income)"
-                strokeWidth={2}
-                dot={{ r: 3, fill: 'var(--chart-income)', strokeWidth: 0 }}
-                activeDot={{ r: 5, strokeWidth: 0 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="outcome"
-                name="outcome"
-                stroke="var(--chart-outcome)"
-                strokeWidth={2}
-                dot={{ r: 3, fill: 'var(--chart-outcome)', strokeWidth: 0 }}
-                activeDot={{ r: 5, strokeWidth: 0 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <>
+            <p id={summaryId} className="sr-only">
+              {summary}
+            </p>
+            <div role="img" aria-labelledby={`${titleId} ${descriptionId} ${summaryId}`}>
+              <div aria-hidden="true">
+                <ResponsiveContainer width="100%" height={280}>
+                  <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fontSize: 12, fill: 'var(--color-muted-foreground)' }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)' }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+                      width={48}
+                    />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend
+                      formatter={(value) => (
+                        <span className="text-xs text-muted-foreground capitalize">{value}</span>
+                      )}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="income"
+                      name="income"
+                      stroke="var(--chart-income)"
+                      strokeWidth={2}
+                      dot={{ r: 3, fill: 'var(--chart-income)', strokeWidth: 0 }}
+                      activeDot={{ r: 5, strokeWidth: 0 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="outcome"
+                      name="outcome"
+                      stroke="var(--chart-outcome)"
+                      strokeWidth={2}
+                      dot={{ r: 3, fill: 'var(--chart-outcome)', strokeWidth: 0 }}
+                      activeDot={{ r: 5, strokeWidth: 0 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>
