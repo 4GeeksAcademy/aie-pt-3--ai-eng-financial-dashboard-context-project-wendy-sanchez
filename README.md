@@ -17,6 +17,37 @@ _Estas instrucciones están [disponibles en español](./README.es.md)._
 
 _Financial metrics dashboard with a React + TypeScript frontend and a FastAPI backend._
 
+## Configuration
+
+### Prerequisites
+
+- Docker and Docker Compose
+
+### Setup
+
+```bash
+docker compose up --build
+```
+
+The frontend uses the Vite proxy for `/api` by default, so no extra environment variables are required in local development or Codespaces.
+If you need to target a different backend origin, copy `frontend/.env.example` to `.env` and set `VITE_API_BASE_URL`.
+
+## Usage
+
+After starting services:
+
+- Frontend: http://localhost:5173
+- Backend: http://localhost:8000
+- API documentation: http://localhost:8000/docs
+
+Frontend scripts (from `frontend/`):
+
+```bash
+npm run dev
+npm run build
+npm run test
+```
+
 ## Recommended steps
 
 1. Fork this repository to your account.
@@ -48,6 +79,17 @@ If you need to target a different backend origin, copy `frontend/.env.example` t
 - Frontend: http://localhost:5173
 - Backend: http://localhost:8000
 - API documentation: http://localhost:8000/docs
+
+## Contribution
+
+1. Fork this repository.
+2. Create a feature branch.
+3. Make your changes and run relevant checks.
+4. Open a pull request with a clear description.
+
+## License
+
+Pending definition.
 
 ---
 

@@ -1,5 +1,29 @@
 # Estado Actual
 
+## Actualizaciones recientes (2026-08-02)
+
+### Skills aplicadas
+- `accessibility`: se mejoro accesibilidad en frontend (semantica ARIA en secciones y tarjetas, ocultación de íconos decorativos, resumen accesible en gráficos, foco visible global y ajustes de contraste).
+- `vercel-react-best-practices`: se aplicaron mejoras de rendimiento compatibles con Vite/React (metadata del documento, code splitting con `lazy`/`Suspense` para graficos, y ajuste de stack tipográfico para evitar dependencias no optimizadas).
+- `typescript-mcp-server-generator`: se creó un servidor MCP en TypeScript con SDK v2 y transporte stdio en `mcp-server/`, conectado a endpoints financieros del backend mediante tools tipadas y validadas con Zod.
+- `readme-generador` (nueva): se creó la skill personalizada en `.agents/skills/readme-generador/SKILL.md` y se ejecutó para actualizar `README.md` preservando secciones existentes y agregando secciones base (`Configuration`, `Usage`, `Contribution`, `License`).
+
+### Cambios realizados
+- Nuevo proyecto MCP en `mcp-server/` con:
+   - `package.json`, `tsconfig.json`, `.gitignore`, `README.md` y `src/index.ts`.
+   - Build local validado con `npm run build`.
+- Mejoras de accesibilidad y rendimiento en frontend:
+   - `frontend/src/App.tsx`
+   - `frontend/src/components/dashboard/dashboard-header.tsx`
+   - `frontend/src/components/dashboard/kpi-card.tsx`
+   - `frontend/src/components/dashboard/income-outcome-chart.tsx`
+   - `frontend/src/components/dashboard/profit-percent-chart.tsx`
+   - `frontend/src/index.css`
+   - `frontend/index.html`
+- Actualización documental:
+   - `README.md` actualizado via skill `readme-generador`.
+   - Justificación de skill MCP en `.agents/skills/justificacion-typescript-mcp-server-generator.txt`.
+
 ## Funcionalidades implementadas
 ### API backend
 - Endpoint de salud (`/health`) implementado.
